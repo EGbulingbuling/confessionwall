@@ -1,0 +1,238 @@
+ 
+ 
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <title>表白墙 - 爱就大胆说出来</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" th:href="@{/res/layui/css/layui.css}">
+  <link rel="stylesheet" th:href="@{/res/css/global.css}">
+</head>
+<body>
+
+<div class="fly-header layui-bg-black" th:include="common/header.html :: head"></div>
+<br>
+
+<div class="layui-container">
+  <div class="layui-row layui-col-space15">
+    <div class="layui-col-md8 content detail">
+      <div class="fly-panel detail-box">
+        <div class="fly-detail-info">
+          <span class="layui-badge layui-bg-red" th:if="${post.getPostType()} eq '1'">表白</span>
+          <span class="layui-btn layui-btn-xs jie-admin" th:if="${post.getPostType()} eq '2'">分享</span>
+          <span class="layui-badge fly-badge-accept layui-hide-xs" th:if="${post.getPostType()} eq '3'">吐槽</span>
+
+          <div class="fly-admin-box" th:attr="data-id=${post.getPostId()}">
+            <span class="layui-btn layui-btn-xs jie-admin" type="collect" field="stick" rank="1" th:if="not ${isTreasure} and ${user!=null}" data-type="add">收藏</span>
+            <span class="layui-btn layui-btn-xs jie-admin layui-btn-danger" type="collect" field="stick" rank="0" th:if="${isTreasure} and ${user!=null}" data-type="undo">取消收藏</span>
+
+            <span class="layui-btn layui-btn-xs jie-admin" type="del" th:if="${isMy}">删除</span>
+          </div>
+
+          <span class="fly-list-nums">
+            <a href="#comment"><i class="iconfont icon-pinglun1" title="回复"></i><span id="answer_count" th:text="${post.getAnswerCount()}"></span></a>
+            <i class="iconfont" title="浏览">&#xe60b;</i><span id="browse_count" th:text="${post.getPostVisitedCount()}"></span>
+          </span>
+        </div>
+        <div class="detail-about">
+          <a class="fly-avatar" th:href="@{/user/home/{uid}(uid=${post.getUser().getUserId()})}" th:if="${post.getPostType()} ne '0'">
+            <img th:src="@{{head}(head=${post.getUser().getHead()})}" >
+          </a>
+          <a href="javascript:void(0);" th:if="${post.getPostType()} eq '0'" class="fly-avatar">
+            <img th:src="@{/res/images/avatar/00.jpg}" >
+          </a>
+          <div class="fly-detail-user">
+            <a th:href="@{/user/home/{uid}(uid=${post.getUser().getUserId()})}" th:if="${post.getPostType()} ne '0'" class="fly-link">
+              <cite th:text="${post.getUser().getNickname()}"></cite>
+              <i class="layui-badge fly-badge-vip" th:if="${post.getUser().getExperience() lt 600 and post.getUser().getExperience() ge 0}" th:text="Lv1"></i>
+              <i class="layui-badge fly-badge-vip" th:if="${post.getUser().getExperience() lt 2000 and post.getUser().getExperience() ge 600}" th:text="Lv2"></i>
+              <i class="layui-badge fly-badge-vip" th:if="${post.getUser().getExperience() lt 4000 and post.getUser().getExperience() ge 2000}" th:text="Lv3"></i>
+              <i class="layui-badge fly-badge-vip" th:if="${post.getUser().getExperience() lt 10000 and post.getUser().getExperience() ge 4000}" th:text="Lv4"></i>
+              <i class="layui-badge fly-badge-vip" th:if="${post.getUser().getExperience() lt 20000 and post.getUser().getExperience() ge 10000}" th:text="Lv5"></i>
+              <i class="layui-badge fly-badge-vip" th:if="${post.getUser().getExperience() ge 20000}" th:text="Lv6"></i>
+            </a>
+            <a href="javascript:void(0);" th:if="${post.getPostType()} eq '0'" class="fly-link">
+              <cite th:text="匿名用户"></cite>
+            </a>
+            <span th:text="${#dates.format(post.getPostCreateTime(),'yyyy-MM-dd HH:mm')}"></span>
+          </div>
+          <div class="fly-list-info" th:if="${post.getPostType()} ne '0'">
+            <cite th:text="${post.getUser().getAutograph()}"></cite>
+          </div>
+        </div>
+
+        <!--    帖子内容    -->
+        <div class="detail-body photos" th:utext="${post.getPostContent()}"></div>
+
+        <div class="jieda-reply" th:attr="data-id=${post.getPostId()}" th:if="not ${isMy} and not ${isLike} and ${user!=null}">
+          <span class="jie-admin" type="zan">
+            <i class="iconfont icon-zan"></i>
+            <em th:text="${post.getPostLikedCount()}"></em>
+          </span>
+        </div>
+        <div class="jieda-reply" th:attr="data-id=${post.getPostId()}" th:if="not ${isMy} and ${isLike} and ${user!=null}">
+          <span class="jie-admin zanok" type="zan">
+            <i class="iconfont icon-zan"></i>
+            <em th:text="${post.getPostLikedCount()}"></em>
+          </span>
+        </div>
+        <div class="jieda-reply" th:attr="data-id=${post.getPostId()}" th:if="${isMy} or ${user==null}">
+          <span class="jie-admin">
+            <i class="iconfont icon-zan"></i>
+            <em th:text="${post.getPostLikedCount()}"></em>
+          </span>
+        </div>
+      </div>
+
+      <div class="fly-panel detail-box" id="flyReply">
+        <fieldset class="layui-elem-field layui-field-title" style="text-align: center;">
+          <legend>回复</legend>
+        </fieldset>
+
+        <ul class="jieda" id="jieda">
+          <li th:attr="data-id=${answer.getAnswerId()}" class="jieda-daan" th:each="answer:${answerList}">
+            <a name="item-1111111111"></a>
+            <div class="detail-about detail-about-reply">
+              <a th:href="@{/user/home/{uid}(uid=${answer.getUser().getUserId()})}" class="fly-avatar" th:if="${post.getPostType()} ne '0' or ${post.getUser().getUserId()} ne ${answer.getUser().getUserId()}">
+                  <img th:src="@{{head}(head=${answer.getUser().getHead()})}" >
+              </a>
+              <div class="fly-detail-user" th:if="${post.getPostType()} ne '0' or ${post.getUser().getUserId()} ne ${answer.getUser().getUserId()}">
+                <a th:href="@{/user/home/{uid}(uid=${answer.getUser().getUserId()})}" link>
+                  <cite th:text="${answer.getUser().getNickname()}"></cite>
+                  <i class="layui-badge fly-badge-vip" th:if="${answer.getUser().getExperience() lt 600 and answer.getUser().getExperience() ge 0}" th:text="Lv1"></i>
+                  <i class="layui-badge fly-badge-vip" th:if="${answer.getUser().getExperience() lt 2000 and answer.getUser().getExperience() ge 600}" th:text="Lv2"></i>
+                  <i class="layui-badge fly-badge-vip" th:if="${answer.getUser().getExperience() lt 4000 and answer.getUser().getExperience() ge 2000}" th:text="Lv3"></i>
+                  <i class="layui-badge fly-badge-vip" th:if="${answer.getUser().getExperience() lt 10000 and answer.getUser().getExperience() ge 4000}" th:text="Lv4"></i>
+                  <i class="layui-badge fly-badge-vip" th:if="${answer.getUser().getExperience() lt 20000 and answer.getUser().getExperience() ge 10000}" th:text="Lv5"></i>
+                  <i class="layui-badge fly-badge-vip" th:if="${answer.getUser().getExperience() ge 20000}" th:text="Lv6"></i>
+                </a>
+              </div>
+              <a href="javascript:void(0);" class="fly-avatar" th:if="${post.getPostType()} eq '0' and ${post.getUser().getUserId()} eq ${answer.getUser().getUserId()}">
+                <img th:src="@{/res/images/avatar/00.jpg}" >
+              </a>
+              <div class="fly-detail-user" th:if="${post.getPostType()} eq '0' and ${post.getUser().getUserId()} eq ${answer.getUser().getUserId()}">
+                <a href="javascript:void(0);" link>
+                  <cite th:text="匿名用户"></cite>
+                </a>
+              </div>
+
+              <div class="detail-hits">
+                <span th:text="${#dates.format(answer.getAnswerCreateTime(),'yyyy-MM-dd HH:mm')}"></span>
+              </div>
+
+            </div>
+            <div class="detail-body jieda-body photos">
+              <a th:if="${answer.getRespondent()!=null}" th:text="'@'+${answer.getRespondent().getNickname()}"></a>
+              <p th:text="${answer.getAnswerContent()}"></p>
+            </div>
+            <div class="jieda-reply">
+              <span type="reply">
+                <i class="iconfont icon-svgmoban53"></i>
+                回复
+              </span>
+              <div class="jieda-admin">
+                <span type="del" th:if="${isMy}">删除</span>
+              </div>
+            </div>
+          </li>
+        </ul>
+        
+        <div class="layui-form layui-form-pane" th:if="${user!=null}">
+          <form action="" method="post">
+            <div class="layui-form-item layui-form-text">
+              <a name="comment"></a>
+              <div class="layui-input-block">
+                <textarea id="L_content" name="answerContent" required lay-verify="required" placeholder="请输入内容"  class="layui-textarea fly-editor" style="height: 150px;"></textarea>
+              </div>
+            </div>
+            <div class="layui-form-item">
+<!--              <input type="hidden" name="jid" value="123">-->
+              <button class="layui-btn" lay-filter="*" lay-submit>提交回复</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="layui-col-md4" >
+
+      <div class="fly-panel">
+        <div class="fly-panel-title">
+          此人发布违法信息?
+        </div>
+        <div class="fly-panel-main" th:attr="data-id=${post.getPostId()}">
+<!--          <a th:href="@{/post/tipoff/{pid}(pid=${post.getPostId()})}" class="fly-zanzhu" style="background-color: orangered;">举报ta</a>-->
+          <span id="tip_off" class="layui-btn layui-btn-danger jie-admin" type="tipoff">举报</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="fly-footer" th:include="common/footer.html :: foot"></div>
+<script th:src="@{/res/layui/layui.js}"></script>
+<script>
+  layui.cache.page = 'jie';
+  layui.cache.user = {
+    username: '游客'
+    ,uid: -1
+    ,avatar: '/res/images/avatar/00.jpg'
+    ,experience: 83
+    ,sex: '男'
+  };
+  layui.config({
+    version: "3.0.0"
+    ,base: '/res/mods/'
+  }).extend({
+    fly: 'index'
+  }).use('fly');
+
+  layui.use(['jquery','form'], function(){
+    var form = layui.form;
+    var $=layui.jquery;
+
+    form.on('submit(*)', function(data){
+      $.ajax({
+        url:"/answer/goAdd/"+[[${post.postId}]],
+        data:JSON.stringify(data.field),
+        method:"POST",
+        contentType : "application/json;charset=UTF-8",//必须
+        dataType:"json",
+        success:function(data){
+          if (data.code == 0) {
+            $("#L_content").text("");
+            location.reload();
+          }else {
+            layer.msg("服务器繁忙，请稍后再试");
+          }
+        },
+        error:function(data){
+          layer.msg("服务器繁忙，请稍后再试");
+        }
+      });
+      return false;
+    });
+
+    $("#tip_off").click(function(){
+      var pid=[[${post.postId}]];
+      $.ajax({
+        url:"/post/tipoff",
+        data:{"pid":pid},
+        method:"get",
+        success:function(data){
+          if (data.code == 0) {
+            layer.msg("举报成功,等待受理");
+          }else if (data.code == 110) {
+            layer.msg("服务器繁忙");
+          }
+        },
+        error:function(data){
+          layer.msg("服务器繁忙，请稍后再试");
+        }
+      });
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,243 @@
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <title>表白墙 - 爱就大胆说出来</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" th:href="@{/res/layui/css/layui.css}">
+  <link rel="stylesheet" th:href="@{/res/css/global.css}">
+</head>
+<body style="margin-top: 65px;">
+
+<div class="fly-header layui-bg-black" th:include="common/header.html :: head"></div>
+<br>
+
+<div class="fly-home fly-panel" style="background-image: url();">
+  <img th:src="@{{headurl}(headurl=${visited.getHead()})}" >
+  <h1>
+    <a th:text="${visited.getNickname()}"></a>
+    <i class="iconfont icon-nan" th:if="${visited.getSex() eq 0}"></i>
+    <i class="iconfont icon-nv" th:if="${visited.getSex() eq 1}"></i>
+    <i class="layui-badge fly-badge-vip" th:if="${visited.getExperience() lt 600 and visited.getExperience() ge 0}" th:text="Lv1"></i>
+    <i class="layui-badge fly-badge-vip" th:if="${visited.getExperience() lt 2000 and visited.getExperience() ge 600}" th:text="Lv2"></i>
+    <i class="layui-badge fly-badge-vip" th:if="${visited.getExperience() lt 4000 and visited.getExperience() ge 2000}" th:text="Lv3"></i>
+    <i class="layui-badge fly-badge-vip" th:if="${visited.getExperience() lt 10000 and visited.getExperience() ge 4000}" th:text="Lv4"></i>
+    <i class="layui-badge fly-badge-vip" th:if="${visited.getExperience() lt 20000 and visited.getExperience() ge 10000}" th:text="Lv5"></i>
+    <i class="layui-badge fly-badge-vip" th:if="${visited.getExperience() ge 20000}" th:text="Lv6"></i>
+    <i id="level_help" class="layui-icon" style="font-size: 20px">&#xe60b;</i>
+  </h1>
+
+  <p class="fly-home-info">
+    <i class="iconfont icon-kiss" title="飞吻"></i><span style="color: #FF7200;" th:text="${visited.getExperience()}+' 飞吻'"></span>
+    <i id="experience_help" class="layui-icon" style="font-size: 20px">&#xe60b;</i>
+    <i class="iconfont icon-shijian"></i><span th:text="${#dates.format(visited.getUserCreatedTime(),'yyyy-MM-dd')}+'加入'"></span>
+<!--    <i class="iconfont icon-chengshi"></i><span>来自杭州</span>-->
+  </p>
+
+  <p class="fly-home-sign"><span>个性签名:</span><span th:text="${visited.getAutograph()}"></span></p>
+
+  <div class="fly-sns" th:attr="data-uid=${visited.getUserId()}">
+    <a href="javascript:;" id="follow" class="layui-btn layui-btn-primary fly-imActive" data-type="following" th:if="not ${isMe} and not ${isFollow}">关注ta</a>
+    <a href="javascript:;" id="follow" class="layui-btn fly-imActive" data-type="undo" th:if="not ${isMe} and ${isFollow}">取消关注</a>
+    <a th:href="@{/message/addMessage/{userId}(userId=${visited.getUserId()})}" id="message" class="layui-btn layui-btn-normal fly-imActive" data-type="chat" th:if="not ${isMe}">给ta留言</a>
+  </div>
+
+</div>
+
+<div class="layui-container">
+  <div class="layui-row layui-col-space15">
+    <div class="layui-col-md6 fly-home-jie  layui-col-md8">
+      <div class="fly-panel">
+        <h3 class="fly-panel-title" th:text="${visited.getNickname()}+' 最近发布内容'"></h3>
+        <ul class="jie-row" id="flag">
+          <li th:if="${not #lists.isEmpty(postList)}" th:each="post:${postList}">
+            <a th:href="@{/post/detail/{pid}(pid=${post.getPostId()})}" th:text="${post.getPostAbstract()}" class="jie-title"></a>
+            <i th:text="${#dates.format(post.getPostCreateTime(),'yyyy-MM-dd')}"></i>
+            <em class="layui-hide-xs" th:text="${post.getAnswerCount()}+'回复'"></em>
+          </li>
+        </ul>
+        <div class="fly-none" style="min-height: 50px; padding:30px 0; height:auto;" th:if="${#lists.isEmpty(postList)}">
+          <i style="font-size:14px;">没有发表任何内容</i>
+        </div>
+        <div style="text-align: center" id="message-div" th:if="not ${#lists.isEmpty(postList)}">
+          <button id="more-message" type="button" class="layui-btn layui-btn-primary" th:if="${session.pageUtil.isHasNextPage()}">查看更多</button>
+          <button type="button" class="layui-btn layui-btn-primary" th:if="not ${session.pageUtil.isHasNextPage()}">已经到底了</button>
+        </div>
+
+        <br>
+      </div>
+    </div>
+
+    <div class="layui-col-md4">
+      <div class="fly-panel fly-rank fly-rank-reply">
+        <h3 class="fly-panel-title">个人成就</h3>
+        <ul class="mine-msg">
+          <li>
+            <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <i class="layui-icon" style="font-size: 22px">&#xe6c6;</i>
+            <span>&nbsp;</span>
+            <span th:text="'获得 '+${likedNum}+' 次赞'"></span>
+          </li>
+          <li>
+            <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <i class="layui-icon" style="font-size: 22px">&#xe600;</i>
+            <span>&nbsp;</span>
+            <span th:text="'被收藏 '+${collectedNum}+' 次'"></span>
+          </li>
+          <li>
+            <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <i class="layui-icon" style="font-size: 22px">&#xe770;</i>
+            <span>&nbsp;</span>
+            <span th:text="'被 '+${followedNum}+' 人关注'"></span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="fly-panel fly-rank fly-rank-reply" id="LAY_replyRank" th:if="${isMe}">
+        <h3 class="fly-panel-title">我的访客</h3>
+        <dl>
+          <dd th:each="visitor:${visitorList}"><!--有数量要求-->
+            <a th:href="@{/user/home/{uid}(uid=${visitor.getVisitor().getUserId()})}">
+              <img th:src="@{{head}(head=${visitor.getVisitor().getHead()})}">
+              <cite th:text="${visitor.getVisitor().getNickname()}"></cite>
+              <i th:text="${#dates.format(visitor.getVisitedTime(),'yyyy-MM-dd')}"></i>
+            </a>
+          </dd>
+        </dl>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="fly-footer" th:include="common/footer.html :: foot"></div>
+<script th:src="@{/res/layui/layui.js}"></script>
+<script>
+  layui.cache.page = 'jie';
+  layui.cache.user = {
+    username: '游客'
+    ,uid: -1
+    ,avatar: '../../res/images/avatar/00.jpg'
+    ,experience: 83
+    ,sex: '男'
+  };
+  layui.config({
+    version: "3.0.0"
+    ,base: '../../res/mods/'
+  }).extend({
+    fly: 'index'
+  }).use('fly');
+
+  layui.use(['fly','layer','jquery'],function (data) {
+    var fly=layui.fly;
+    var layer = layui.layer;
+    var $ = layui.jquery;
+
+    $("#follow").click(function () {
+      var othis = $(this), type = othis.data('type'),div=othis.parent();
+
+      $.ajax({
+        url:'/follow/'+ type +'/',
+        method:"post",
+        data:{"uid":div.data('uid')},
+        success:function(data){
+          if(type === 'following'){
+            if (data.status === "0") {
+              layer.msg("关注成功");
+              othis.data('type', 'undo').html('取消关注').removeClass('layui-btn-primary');
+            }else if (data.status === "1") {
+              layer.msg(data.msg);
+            }
+          } else if(type === 'undo'){
+            if (data.status === "0") {
+              layer.msg("取消关注成功");
+              othis.data('type', 'add').html('关注ta').addClass('layui-btn-primary');
+            }else if (data.status === "1") {
+              layer.msg(data.msg);
+            }
+          }
+        },
+        error:function(data){
+          layer.msg("服务器繁忙，请稍后再试");
+        }
+      });
+    });
+
+    $("#level_help").click(function () {
+      layer.open({
+        type: 1
+        ,title: '等级说明'
+        ,area: '300px'
+        ,shade: 0.8
+        ,shadeClose: true
+        ,content: ['<div class="layui-text" style="padding: 20px;">'
+          ,'<blockquote class="layui-elem-quote">升级需要飞吻，等级与飞吻关系如下</blockquote>'
+          ,'<table class="layui-table">'
+          ,'<thead>'
+          ,'<tr><th>等级</th><th>飞吻</th></tr>'
+          ,'</thead>'
+          ,'<tbody>'
+          ,'<tr><td>1</td><td>0</td></tr>'
+          ,'<tr><td>2</td><td>600</td></tr>'
+          ,'<tr><td>3</td><td>2000</td></tr>'
+          ,'<tr><td>4</td><td>4000</td></tr>'
+          ,'<tr><td>5</td><td>10000</td></tr>'
+          ,'<tr><td>6</td><td>20000</td></tr>'
+          ,'</tbody>'
+          ,'</table>'
+          ,'</div>'].join('')
+      });
+    });
+
+    $("#experience_help").click(function () {
+      layer.open({
+        type: 1
+        ,title: '飞吻说明'
+        ,area: '300px'
+        ,shade: 0.8
+        ,shadeClose: true
+        ,content: ['<div class="layui-text" style="padding: 20px;">'
+          ,'<blockquote class="layui-elem-quote">飞吻获得途径如下</blockquote>'
+          ,'<ul>'
+          ,'<li>签到，详细内容请看签到说明</li>'
+          ,'<li>发布表白、吐槽、分享，每发一个增加一个飞吻</li>'
+          ,'<li>发布的表白、吐槽、分享被人点赞、评论、收藏，一次一个飞吻</li>'
+          ,'</ul>'
+          ,'</div>'].join('')
+      });
+    });
+
+    /**
+     *
+     * 我前端学的贼差，原谅我写的狗屎代码
+     *
+     */
+    $("#more-message").click(function(){
+      $.ajax({
+        url:"/morePost",
+        method:"get",
+        success:function(data){
+          var morePost="";
+          for (var temp in data.postList){
+            morePost+="<li>";
+            morePost+="<a href=\"/post/detail/"+data.postList[temp].postId+"\" class=\"jie-title\">"+data.postList[temp].postAbstract+"</a>";
+            morePost+="<i>"+data.postList[temp].postCreateTime+"</i>";
+            morePost+="<em class=\"layui-hide-xs\">"+data.postList[temp].answerCount+"回复</em>";
+            morePost+="</li>";
+          }
+          $("#flag").append(morePost);
+          if (data.pageUtil.hasNextPage == false) {
+            $("#more-message").remove();
+            $("#message-div").append("<button type=\"button\" class=\"layui-btn layui-btn-primary\" >已经到底了</button>");
+          }
+        },
+        error:function(data){
+          layer.msg("服务器繁忙，请稍后再试");
+        }
+      });
+    });
+  });
+</script>
+</body>
+</html>

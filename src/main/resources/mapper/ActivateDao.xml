@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.eg.confessionwall.dao.ActivateDao">
+
+    <resultMap type="org.eg.confessionwall.entity.Activate" id="ActivateMap">
+        <result property="activateId" column="activate_id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="activationCode" column="activation_code" jdbcType="VARCHAR"/>
+        <result property="activateState" column="activate_state" jdbcType="INTEGER"/>
+        <result property="activateTime" column="activate_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="ActivateMap">
+        select
+          activate_id, user_id, activation_code, activate_state, activate_time
+        from confessionwall.activate
+        where user_id = #{userId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="ActivateMap">
+        select
+          activate_id, user_id, activation_code, activate_state, activate_time
+        from confessionwall.activate
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="ActivateMap">
+        select
+          activate_id, user_id, activation_code, activate_state, activate_time
+        from confessionwall.activate
+        <where>
+            <if test="activateId != null">
+                and activate_id = #{activateId}
+            </if>
+            <if test="userId != null">
+                and user_id = #{userId}
+            </if>
+            <if test="activationCode != null and activationCode != ''">
+                and activation_code = #{activationCode}
+            </if>
+            <if test="activateState != null">
+                and activate_state = #{activateState}
+            </if>
+            <if test="activateTime != null">
+                and activate_time = #{activateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="activateId" useGeneratedKeys="true">
+        insert into confessionwall.activate(user_id, activation_code)
+        values (#{userId}, #{activationCode})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update confessionwall.activate
+        <set>
+            <if test="activationCode != null and activationCode != ''">
+                activation_code = #{activationCode},
+            </if>
+            <if test="activateState != null">
+                activate_state = #{activateState},
+            </if>
+            <if test="activateTime != null">
+                activate_time = #{activateTime},
+            </if>
+        </set>
+        where user_id = #{userId}
+    </update>
+
+    <!--通过uid删除-->
+    <delete id="deleteById">
+        delete from confessionwall.activate where user_id = #{userId}
+    </delete>
+
+</mapper>

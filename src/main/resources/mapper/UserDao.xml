@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.eg.confessionwall.dao.UserDao">
+
+    <resultMap type="org.eg.confessionwall.entity.User" id="UserMap">
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="account" column="account" jdbcType="VARCHAR"/>
+        <result property="password" column="password" jdbcType="VARCHAR"/>
+        <result property="salt" column="salt" jdbcType="VARCHAR"/>
+        <result property="nickname" column="nickname" jdbcType="VARCHAR"/>
+        <result property="autograph" column="autograph" jdbcType="VARCHAR"/>
+        <result property="sex" column="sex" jdbcType="OTHER"/>
+        <result property="head" column="head" jdbcType="VARCHAR"/>
+        <result property="experience" column="experience" jdbcType="INTEGER"/>
+        <result property="signedCount" column="signed_count" jdbcType="INTEGER"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        <result property="userState" column="user_state" jdbcType="INTEGER"/>
+        <result property="blockedCount" column="blocked_count" jdbcType="OTHER"/>
+        <result property="userCreatedTime" column="user_created_time" jdbcType="TIMESTAMP"/>
+        <result property="lastLoginTime" column="last_login_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="UserMap">
+        select
+          user_id, account, password, salt, nickname, autograph, sex, head, experience, signed_count, phone, user_state, blocked_count, user_created_time, last_login_time
+        from confessionwall.user
+        where user_id = #{userId}
+    </select>
+
+    <!--通过账号查询用户-->
+    <select id="queryByAccount" resultMap="UserMap">
+        select
+          user_id, account, password, salt, nickname, autograph, sex, head, experience, signed_count, phone, user_state, blocked_count, user_created_time, last_login_time
+        from confessionwall.user
+        where account = #{account}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="UserMap">
+        select
+          user_id, account, password, salt, nickname, autograph, sex, head, experience, signed_count, phone, user_state, blocked_count, user_created_time, last_login_time
+        from confessionwall.user
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="UserMap">
+        select
+          user_id, account, password, salt, nickname, autograph, sex, head, experience, signed_count, phone, user_state, blocked_count, user_created_time, last_login_time
+        from confessionwall.user
+        <where>
+            <if test="userId != null">
+                and user_id = #{userId}
+            </if>
+            <if test="account != null and account != ''">
+                and account = #{account}
+            </if>
+            <if test="password != null and password != ''">
+                and password = #{password}
+            </if>
+            <if test="salt != null and salt != ''">
+                and salt = #{salt}
+            </if>
+            <if test="nickname != null and nickname != ''">
+                and nickname = #{nickname}
+            </if>
+            <if test="autograph != null and autograph != ''">
+                and autograph = #{autograph}
+            </if>
+            <if test="sex != null">
+                and sex = #{sex}
+            </if>
+            <if test="head != null and head != ''">
+                and head = #{head}
+            </if>
+            <if test="experience != null">
+                and experience = #{experience}
+            </if>
+            <if test="signedCount != null">
+                and signed_count = #{signedCount}
+            </if>
+            <if test="phone != null and phone != ''">
+                and phone = #{phone}
+            </if>
+            <if test="userState != null">
+                and user_state = #{userState}
+            </if>
+            <if test="blockedCount != null">
+                and blocked_count = #{blockedCount}
+            </if>
+            <if test="userCreatedTime != null">
+                and user_created_time = #{userCreatedTime}
+            </if>
+            <if test="lastLoginTime != null">
+                and last_login_time = #{lastLoginTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="userId" useGeneratedKeys="true">
+        insert into confessionwall.user(account, password, salt, nickname, sex, head, last_login_time)
+        values (#{account}, #{password}, #{salt}, #{nickname}, #{sex}, #{head}, #{lastLoginTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update confessionwall.user
+        <set>
+            <if test="account != null and account != ''">
+                account = #{account},
+            </if>
+            <if test="password != null and password != ''">
+                password = #{password},
+            </if>
+            <if test="salt != null and salt != ''">
+                salt = #{salt},
+            </if>
+            <if test="nickname != null and nickname != ''">
+                nickname = #{nickname},
+            </if>
+            <if test="autograph != null">
+                autograph = #{autograph},
+            </if>
+            <if test="sex != null">
+                sex = #{sex},
+            </if>
+            <if test="head != null and head != ''">
+                head = #{head},
+            </if>
+            <if test="experience != null">
+                experience = #{experience},
+            </if>
+            <if test="signedCount != null">
+                signed_count = #{signedCount},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="userState != null">
+                user_state = #{userState},
+            </if>
+            <if test="blockedCount != null">
+                blocked_count = #{blockedCount},
+            </if>
+            <if test="userCreatedTime != null">
+                user_created_time = #{userCreatedTime},
+            </if>
+            <if test="lastLoginTime != null">
+                last_login_time = #{lastLoginTime},
+            </if>
+        </set>
+        where user_id = #{userId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from confessionwall.user where user_id = #{userId}
+    </delete>
+
+    <!--查询该昵称的数量-->
+    <select id="checkNickname" resultType="int">
+        select
+          count(user_id)
+        from confessionwall.user
+        where nickname = #{nickname}
+    </select>
+
+    <!--查询该电话的数量-->
+    <select id="checkPhone" resultType="int">
+        select
+          count(user_id)
+        from confessionwall.user
+        where phone = #{phone}
+    </select>
+</mapper>

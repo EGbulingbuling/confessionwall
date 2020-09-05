@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.eg.confessionwall.dao.FollowDao">
+
+    <resultMap type="org.eg.confessionwall.entity.Follow" id="FollowMap">
+        <result property="followId" column="follow_id" jdbcType="INTEGER"/>
+        <result property="followedTime" column="followed_time" jdbcType="TIMESTAMP"/>
+        <association property="follower" select="org.eg.confessionwall.dao.UserDao.queryById" column="follower_id"/>
+        <association property="followed" select="org.eg.confessionwall.dao.UserDao.queryById" column="followed_id"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="FollowMap">
+        select
+          follow_id, follower_id, followed_id, followed_time
+        from confessionwall.follow
+        where follow_id = #{followId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="FollowMap">
+        select
+          follow_id, follower_id, followed_id, followed_time
+        from confessionwall.follow
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" parameterType="follow" resultMap="FollowMap">
+        select
+          follow_id, follower_id, followed_id, followed_time
+        from confessionwall.follow
+        <where>
+            <if test="follow.followId != null">
+                and follow_id = #{follow.followId}
+            </if>
+            <if test="follow.follower != null">
+                and follower_id = #{follow.follower.userId}
+            </if>
+            <if test="follow.followed != null">
+                and followed_id = #{follow.followed.userId}
+            </if>
+            <if test="follow.followedTime != null">
+                and followed_time = #{follow.followedTime}
+            </if>
+        </where>
+    </select>
+
+    <!--查询用户所有关注的人-->
+    <select id="queryAllFollowing" parameterType="int" resultType="int">
+        select
+        followed_id
+        from confessionwall.follow
+        where follower_id=#{userId}
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="followId" useGeneratedKeys="true">
+        insert into confessionwall.follow(follower_id, followed_id)
+        values (#{follower.userId}, #{followed.userId})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update confessionwall.follow
+        <set>
+            <if test="followerId != null">
+                follower_id = #{follower.userId},
+            </if>
+            <if test="followedId != null">
+                followed_id = #{followed.userId},
+            </if>
+            <if test="followedTime != null">
+                followed_time = #{followedTime},
+            </if>
+        </set>
+        where follow_id = #{followId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from confessionwall.follow where follower_id = #{followerId} and followed_id = #{followedId}
+    </delete>
+
+    <!--查询用户的粉丝数量-->
+    <select id="queryFollowedNum" resultType="int">
+        select
+          count(follow_id)
+        from confessionwall.follow
+        where followed_id = #{followedId}
+    </select>
+</mapper>

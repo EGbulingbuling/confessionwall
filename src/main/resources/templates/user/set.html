@@ -1,0 +1,289 @@
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <title>表白墙 - 爱就大胆说出来</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" th:href="@{/res/layui/css/layui.css}">
+  <link rel="stylesheet" th:href="@{/res/css/global.css}">
+</head>
+<body>
+
+<div class="fly-header layui-bg-black" th:include="common/header.html :: head"></div>
+<br>
+
+<div class="layui-container fly-marginTop fly-user-main">
+  <ul class="layui-nav layui-nav-tree layui-inline" lay-filter="user">
+    <li class="layui-nav-item">
+      <a th:href="@{/user/index}">
+        <i class="layui-icon">&#xe612;</i>
+        用户中心
+      </a>
+    </li>
+    <li class="layui-nav-item layui-this">
+      <a href="">
+        <i class="layui-icon">&#xe620;</i>
+        基本设置
+      </a>
+    </li>
+    <li class="layui-nav-item">
+      <a th:href="@{/user/message}">
+        <i class="layui-icon">&#xe611;</i>
+        我的消息
+      </a>
+    </li>
+  </ul>
+
+  <div class="site-tree-mobile layui-hide">
+    <i class="layui-icon">&#xe602;</i>
+  </div>
+  <div class="site-mobile-shade"></div>
+
+  <div class="site-tree-mobile layui-hide">
+    <i class="layui-icon">&#xe602;</i>
+  </div>
+  <div class="site-mobile-shade"></div>
+  
+  
+  <div class="fly-panel fly-panel-user" pad20>
+    <div class="layui-tab layui-tab-brief" lay-filter="user">
+      <ul class="layui-tab-title" id="LAY_mine">
+        <li class="layui-this" lay-id="info">我的资料</li>
+        <li lay-id="avatar">头像</li>
+        <li lay-id="pass">密码</li>
+        <li lay-id="bind">帐号绑定</li>
+      </ul>
+      <div class="layui-tab-content" style="padding: 20px 0;">
+        <div class="layui-form-pane layui-tab-item layui-show">
+          <form class="layui-form">
+            <div class="layui-form-item">
+              <label for="L_username" class="layui-form-label">昵称</label>
+              <div class="layui-input-inline">
+                <input type="text" id="L_username" name="username" lay-verify="username" autocomplete="off" value="" class="layui-input">
+              </div>
+              <button class="layui-btn" key="set-mine" lay-filter="info-nickname" lay-submit>确认修改</button>
+            </div>
+          </form>
+
+<!--          <form class="layui-form">-->
+<!--            <div class="layui-form-item">-->
+<!--              <label for="L_city" class="layui-form-label">手机号</label>-->
+<!--              <div class="layui-input-inline">-->
+<!--                <input type="text" id="L_city" name="phone" lay-verify="phone" autocomplete="off" value="" class="layui-input">-->
+<!--                &lt;!&ndash;城市改的手机号&ndash;&gt;-->
+<!--              </div>-->
+<!--              <button class="layui-btn" key="set-mine" lay-filter="info-phone" lay-submit>确认修改</button>-->
+<!--            </div>-->
+<!--          </form>-->
+
+          <form class="layui-form">
+            <div class="layui-form-item layui-form-text">
+              <label for="L_sign" class="layui-form-label">签名</label>
+              <div class="layui-input-block">
+                <textarea placeholder="小于140字" id="L_sign" name="autograph" lay-verify="autograph" autocomplete="off" class="layui-textarea" style="height: 80px;"></textarea>
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <button class="layui-btn" key="set-mine" lay-filter="info-autograph" lay-submit>确认修改</button>
+            </div>
+          </form>
+
+        </div>
+
+          <div class="layui-form layui-form-pane layui-tab-item">
+            <div class="layui-form-item">
+              <div class="avatar-add">
+                <p>建议尺寸168*168，支持jpg、png、gif，最大不能超过50KB</p>
+                <button id="headup" type="button" class="layui-btn upload-img">
+                  <i class="layui-icon">&#xe67c;</i>上传头像
+                </button>
+                <img th:src="@{{headurl}(headurl=${user.getHead()})}" >
+                <span class="loading"></span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="layui-form layui-form-pane layui-tab-item">
+            <form action="/user/repass" method="post">
+              <div class="layui-form-item">
+                <label for="L_nowpass" class="layui-form-label">当前密码</label>
+                <div class="layui-input-inline">
+                  <input type="password" id="L_nowpass" name="nowpass" required lay-verify="required" autocomplete="off" class="layui-input">
+                </div>
+              </div>
+              <div class="layui-form-item">
+                <label for="L_pass" class="layui-form-label">新密码</label>
+                <div class="layui-input-inline">
+                  <input type="password" id="L_pass" name="pass" required lay-verify="required|pass" autocomplete="off" class="layui-input">
+                </div>
+                <div class="layui-form-mid layui-word-aux">6到16个字符</div>
+              </div>
+              <div class="layui-form-item">
+                <label for="L_repass" class="layui-form-label">确认密码</label>
+                <div class="layui-input-inline">
+                  <input type="password" id="L_repass" name="repass" required lay-verify="required|pass" autocomplete="off" class="layui-input">
+                </div>
+              </div>
+              <div class="layui-form-item">
+                <button class="layui-btn" key="set-mine" lay-filter="password" lay-submit>确认修改</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="fly-footer" th:include="common/footer.html::foot"></div>
+<script th:src="@{/res/layui/layui.js}"></script>
+<script>
+    layui.cache.page = 'user';
+    layui.cache.user = {
+        username: '游客'
+        ,uid: -1
+        ,avatar: '../../res/images/avatar/00.jpg'
+        ,experience: 83
+        ,sex: '男'
+    };
+    layui.config({
+        version: "2.0.0"
+        ,base: '../../res/mods/'
+    }).extend({
+        fly: 'index'
+    }).use('fly');
+
+    layui.use(['jquery','form'], function(){
+      var form = layui.form;
+      var $=layui.jquery;
+
+      form.on('submit(info-nickname)', function(data){
+          $.ajax({
+            url:"/user/set/nickname",
+            data:JSON.stringify(data.field),
+            method:"POST",
+            contentType : "application/json;charset=UTF-8",//必须
+            dataType:"json",
+            success:function(data){
+              if (data.code == 0) {
+                layer.msg("修改成功");
+              }else if (data.code == 1){
+                layer.msg("昵称已被使用");
+              }else if (data.code == 10){
+                layer.msg("服务器繁忙请重试");
+              }else if (data.code == 11){
+                layer.msg("请输入要修改的信息");
+              }
+            },
+            error:function(data){
+              layer.msg("服务器繁忙，请稍后再试");
+            }
+          });
+        return false;
+      });
+
+      form.on('submit(info-phone)', function(data){
+        $.ajax({
+          url:"/user/set/phone",
+          data:JSON.stringify(data.field),
+          method:"POST",
+          contentType : "application/json;charset=UTF-8",//必须
+          dataType:"json",
+          success:function(data){
+            if (data.code == 0) {
+              layer.msg("修改成功");
+            }else if (data.code == 2){
+              layer.msg("手机号已被绑定");
+            }else if (data.code == 10){
+              layer.msg("服务器繁忙请重试");
+            }else if (data.code == 11){
+              layer.msg("请输入要修改的信息");
+            }
+          },
+          error:function(data){
+            layer.msg("服务器繁忙，请稍后再试");
+          }
+        });
+        return false;
+      });
+
+      form.on('submit(info-autograph)', function(data){
+        $.ajax({
+          url:"/user/set/autograph",
+          data:JSON.stringify(data.field),
+          method:"POST",
+          contentType : "application/json;charset=UTF-8",//必须
+          dataType:"json",
+          success:function(data){
+            if (data.code == 0) {
+              layer.msg("修改成功");
+            }else if (data.code == 10){
+              layer.msg("服务器繁忙请重试");
+            }
+          },
+          error:function(data){
+            layer.msg("服务器繁忙，请稍后再试");
+          }
+        });
+        return false;
+      });
+
+      form.on('submit(password)', function(data){
+        $.ajax({
+          url:"/user/rePassword",
+          data:JSON.stringify(data.field),
+          method:"POST",
+          contentType : "application/json;charset=UTF-8",//必须
+          dataType:"json",
+          success:function(data){
+            if (data.code == 0) {
+              layer.msg("修改成功");
+              location.href = "/user/logout";
+            }else if (data.code == 1){
+              layer.msg("新密码与确认密码不同");
+            }else if (data.code == 2){
+              layer.msg("当前密码错误");
+            }else if (data.code == 3){
+              layer.msg("新密码与当前密码相同");
+            }else if (data.code == 4){
+              layer.msg("新密码不符合要求");
+            }else {
+              layer.msg("服务器繁忙");
+            }
+          },
+          error:function(data){
+            layer.msg("服务器繁忙，请稍后再试");
+          }
+        });
+        return false;
+      });
+
+      form.verify({
+        username: function(value, item){
+          if(!new RegExp("^[a-zA-Z0-9_\u4e00-\u9fa5\\s·]+$").test(value)){
+            return '用户名不能有特殊字符';
+          }
+          if(/(^\_)|(\__)|(\_+$)/.test(value)){
+            return '用户名首尾不能出现下划线\'_\'';
+          }
+          if(/^\d+\d+\d$/.test(value)){
+            return '用户名不能全为数字';
+          }
+        }
+
+        ,pass: [
+          /^[\S]{6,16}$/
+          ,'密码必须6到16位，且不能出现空格'
+        ]
+
+        ,autograph: [
+          /^[\S]{0,140}$/
+          ,'个性签名必须小于140个字符'
+        ]
+      });
+    });
+</script>
+</body>
+</html>

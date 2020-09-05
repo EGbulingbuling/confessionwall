@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.eg.confessionwall.dao.PostDao">
+
+    <resultMap type="org.eg.confessionwall.entity.Post" id="PostMap">
+        <id property="postId" column="post_id" jdbcType="INTEGER"/>
+        <result property="postType" column="post_type" jdbcType="INTEGER"/>
+        <result property="postAbstract" column="post_abstract" jdbcType="VARCHAR"/>
+        <result property="postContent" column="post_content" jdbcType="VARCHAR"/>
+        <result property="postVisitedCount" column="post_visited_count" jdbcType="INTEGER"/>
+        <result property="answerCount" column="answer_count" jdbcType="INTEGER"/>
+        <result property="postLikedCount" column="post_liked_count" jdbcType="INTEGER"/>
+        <result property="postState" column="post_state" jdbcType="INTEGER"/>
+        <result property="postCreateTime" column="post_create_time" jdbcType="TIMESTAMP"/>
+        <association property="user" select="org.eg.confessionwall.dao.UserDao.queryById" column="user_id"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="PostMap">
+        select
+          post_id, user_id, post_type, post_abstract, post_content, post_visited_count, answer_count, post_liked_count, post_state, post_create_time
+        from confessionwall.post
+        where post_id = #{postId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="PostMap">
+        select
+          post_id, user_id, post_type, post_abstract, post_content, post_visited_count, answer_count, post_liked_count, post_state, post_create_time
+        from confessionwall.post
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByTime" resultMap="PostMap">
+        select
+          post_id, user_id, post_type, post_abstract, post_content, post_visited_count, answer_count, post_liked_count, post_state, post_create_time
+        from confessionwall.post
+        where post_state=1
+--         and DATE_SUB(CURDATE(), INTERVAL 15 DAY) <![CDATA[ <= ]]> date(post_create_time)
+        order by post_id desc
+        limit #{pageUtil.currentcount}, #{pageUtil.pageSize}
+    </select>
+
+    <select id="queryTotalByTime" resultType="int">
+        select count(post_id)
+        from confessionwall.post
+        where post_state=1
+--         and DATE_SUB(CURDATE(), INTERVAL 15 DAY) <![CDATA[ <= ]]> date(post_create_time)
+    </select>
+
+    <!--查询关注者的所有帖子（非匿名）-->
+    <select id="queryFollowingAll" resultMap="PostMap">
+        select
+          post_id, user_id, post_type, post_abstract, post_content, post_visited_count, answer_count, post_liked_count, post_state, post_create_time
+        from confessionwall.post
+        where user_id in
+        <foreach collection="following" item="uid" open="(" close=")" separator=",">
+            #{uid}
+        </foreach>
+        and post_state = 1
+        and post_type != 0
+        order by post_id desc
+        limit #{pageUtil.currentcount}, #{pageUtil.pageSize}
+    </select>
+
+    <!--查询关注者的所有帖子总数（非匿名）-->
+    <select id="queryFollowingTotal" parameterType="list" resultType="int">
+        select count(post_id)
+        from confessionwall.post
+        where user_id in
+        <foreach collection="list" item="uid" open="(" close=")" separator=",">
+            #{uid}
+        </foreach>
+        and post_state=1
+        and post_type != 0
+    </select>
+
+    <!--查询七天最热-->
+    <select id="queryWeekHot" resultMap="PostMap">
+        select
+          post_id, user_id, post_type, post_abstract, post_content, post_visited_count, answer_count, post_liked_count, post_state, post_create_time
+        from confessionwall.post
+        where DATE_SUB(CURDATE(), INTERVAL 7 DAY) <![CDATA[ <= ]]> date(post_create_time) and post_state=1
+        order by answer_count desc
+        limit 0,10
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" parameterType="post" resultMap="PostMap">
+        select
+          post_id, user_id, post_type, post_abstract, post_content, post_visited_count, answer_count, post_liked_count, post_state, post_create_time
+        from confessionwall.post
+        <where>
+            <if test="post.postId != null">
+                and post_id = #{post.postId}
+            </if>
+            <if test="post.user != null">
+                and user_id = #{post.user.userId}
+            </if>
+            <if test="post.postType != null">
+                and post_type = #{post.postType}
+            </if>
+            <if test="post.postAbstract != null and post.postAbstract != ''">
+                and post_abstract = #{post.postAbstract}
+            </if>
+            <if test="post.postContent != null and post.postContent != ''">
+                and post_content = #{post.postContent}
+            </if>
+            <if test="post.postVisitedCount != null">
+                and post_visited_count = #{post.postVisitedCount}
+            </if>
+            <if test="post.answerCount != null">
+                and answer_count = #{post.answerCount}
+            </if>
+            <if test="post.postLikedCount != null">
+                and post_liked_count = #{post.postLikedCount}
+            </if>
+            <if test="post.postState != null">
+                and post_state = #{post.postState}
+            </if>
+            <if test="post.postCreateTime != null">
+                and post_create_time = #{post.postCreateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="postId" useGeneratedKeys="true">
+        insert into confessionwall.post(user_id, post_type, post_abstract, post_content)
+        values (#{user.userId}, #{postType}, #{postAbstract}, #{postContent})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update" parameterType="post">
+        update confessionwall.post
+        <set>
+            <if test="post.user != null">
+                user_id = #{post.user.userId},
+            </if>
+            <if test="post.postType != null">
+                post_type = #{post.postType},
+            </if>
+            <if test="post.postAbstract != null and post.postAbstract != ''">
+                post_abstract = #{post.postAbstract},
+            </if>
+            <if test="post.postContent != null and post.postContent != ''">
+                post_content = #{post.postContent},
+            </if>
+            <if test="post.postVisitedCount != null">
+                post_visited_count = #{post.postVisitedCount},
+            </if>
+            <if test="post.answerCount != null">
+                answer_count = #{post.answerCount},
+            </if>
+            <if test="post.postLikedCount != null">
+                post_liked_count = #{post.postLikedCount},
+            </if>
+            <if test="post.postState != null">
+                post_state = #{post.postState},
+            </if>
+            <if test="post.postCreateTime != null">
+                post_create_time = #{post.postCreateTime},
+            </if>
+        </set>
+        where post_id = #{post.postId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from confessionwall.post where post_id = #{postId}
+    </delete>
+
+    <!--查询用户发的非匿名帖子-->
+    <select id="queryByUidEexludeAnony" resultMap="PostMap">
+        select
+        post_id, user_id, post_type, post_abstract, post_content, post_visited_count, answer_count, post_liked_count, post_state, post_create_time
+        from confessionwall.post
+        where user_id = #{userId}
+        and post_state = 1
+        and post_type != 0
+        order by post_id desc
+        limit #{pageUtil.currentcount}, #{pageUtil.pageSize}
+    </select>
+
+    <!--通过用户查帖子，包括匿名的-->
+    <select id="queryAllByUser" resultMap="PostMap">
+        select
+        post_id, user_id, post_type, post_abstract, post_content, post_visited_count, answer_count, post_liked_count, post_state, post_create_time
+        from confessionwall.post
+        where user_id = #{userId}
+        order by post_id desc
+        limit #{pageUtil.currentcount}, #{pageUtil.pageSize}
+    </select>
+
+    <!--查询该用户贴子总数-->
+    <select id="queryTotalByUser" resultType="int">
+        select
+        count(post_id)
+        from confessionwall.post
+        where user_id = #{userId}
+    </select>
+
+    <!--查询该用户非匿名帖子总数-->
+    <select id="queryTotalByUidEexludeAnony" resultType="int">
+        select
+        count(post_id)
+        from confessionwall.post
+        where user_id = #{userId}
+        and post_state = 1
+        and post_type != 0
+    </select>
+</mapper>

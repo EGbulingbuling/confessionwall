@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.eg.confessionwall.dao.MessageDao">
+
+    <resultMap type="org.eg.confessionwall.entity.Message" id="MessageMap">
+        <result property="messageId" column="message_id" jdbcType="INTEGER"/>
+        <result property="messageContent" column="message_content" jdbcType="VARCHAR"/>
+        <result property="messageState" column="message_state" jdbcType="INTEGER"/>
+        <result property="messageCreateTime" column="message_create_time" jdbcType="TIMESTAMP"/>
+        <association property="sender" select="org.eg.confessionwall.dao.UserDao.queryById" column="sender_id"/>
+        <association property="receiver" select="org.eg.confessionwall.dao.UserDao.queryById" column="receiver_id"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="MessageMap">
+        select
+          message_id, sender_id, receiver_id, message_content, message_state, message_create_time
+        from confessionwall.message
+        where message_id = #{messageId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="MessageMap">
+        select
+          message_id, sender_id, receiver_id, message_content, message_state, message_create_time
+        from confessionwall.message
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" parameterType="message" resultMap="MessageMap">
+        select
+          message_id, sender_id, receiver_id, message_content, message_state, message_create_time
+        from confessionwall.message
+        <where>
+            <if test="message.messageId != null">
+                and message_id = #{message.messageId}
+            </if>
+            <if test="message.sender != null">
+                and sender_id = #{message.sender.userId}
+            </if>
+            <if test="message.receiver != null">
+                and receiver_id = #{message.receiver.userId}
+            </if>
+            <if test="message.messageContent != null and message.messageContent != ''">
+                and message_content = #{message.messageContent}
+            </if>
+            <if test="message.messageState != null">
+                and message_state = #{message.messageState}
+            </if>
+            <if test="message.messageCreateTime != null">
+                and message_create_time = #{message.messageCreateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="messageId" useGeneratedKeys="true">
+        insert into confessionwall.message(sender_id, receiver_id, message_content)
+        values (#{sender.userId}, #{receiver.userId}, #{messageContent})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update confessionwall.message
+        <set>
+            <if test="senderId != null">
+                sender_id = #{sender.userId},
+            </if>
+            <if test="receiverId != null">
+                receiver_id = #{receiver.userId},
+            </if>
+            <if test="messageContent != null and messageContent != ''">
+                message_content = #{messageContent},
+            </if>
+            <if test="messageState != null">
+                message_state = #{messageState},
+            </if>
+        </set>
+        where message_id = #{messageId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from confessionwall.message where message_id = #{messageId}
+    </delete>
+
+    <!--通过收信人修改数据-->
+    <update id="updateForReceiver">
+        update confessionwall.message
+        <set>
+            <if test="sender != null">
+                sender_id = #{sender.userId},
+            </if>
+            <if test="messageContent != null and messageContent != ''">
+                message_content = #{messageContent},
+            </if>
+            <if test="messageState != null">
+                message_state = #{messageState},
+            </if>
+        </set>
+        where receiver_id = #{receiver.userId}
+    </update>
+
+    <!--查询用户收到的消息-->
+    <select id="queryAllByUid" resultMap="MessageMap">
+        select
+        message_id, sender_id, receiver_id, message_content, message_state, message_create_time
+        from confessionwall.message
+        where receiver_id=#{userId}
+        order by message_id desc
+        limit #{pageUtil.currentcount}, #{pageUtil.pageSize}
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        select count(message_id)
+        from confessionwall.message
+        where receiver_id=#{userId}
+    </select>
+</mapper>

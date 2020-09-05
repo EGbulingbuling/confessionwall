@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.eg.confessionwall.dao.AnswerDao">
+
+    <resultMap type="org.eg.confessionwall.entity.Answer" id="AnswerMap">
+        <result property="answerId" column="answer_id" jdbcType="INTEGER"/>
+        <result property="answerContent" column="answer_content" jdbcType="VARCHAR"/>
+        <result property="answerLikedCount" column="answer_liked_count" jdbcType="INTEGER"/>
+        <result property="answerCreateTime" column="answer_create_time" jdbcType="TIMESTAMP"/>
+        <association property="post" select="org.eg.confessionwall.dao.PostDao.queryById" column="post_id"/>
+        <association property="user" select="org.eg.confessionwall.dao.UserDao.queryById" column="user_id"/>
+        <association property="respondent" select="org.eg.confessionwall.dao.UserDao.queryById" column="respondent_id"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="AnswerMap">
+        select
+          answer_id, respondent_id, post_id, user_id, answer_content, answer_liked_count, answer_create_time
+        from confessionwall.answer
+        where answer_id = #{answerId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="AnswerMap">
+        select
+          answer_id, respondent_id, post_id, user_id, answer_content, answer_liked_count, answer_create_time
+        from confessionwall.answer
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" parameterType="answer" resultMap="AnswerMap">
+        select
+          answer_id, respondent_id, post_id, user_id, answer_content, answer_liked_count, answer_create_time
+        from confessionwall.answer
+        <where>
+            <if test="answer.answerId != null">
+                and answer_id = #{answer.answerId}
+            </if>
+            <if test="answer.respondent != null">
+                and respondent_id = #{answer.respondent.userId}
+            </if>
+            <if test="answer.post != null">
+                and post_id = #{answer.post.postId}
+            </if>
+            <if test="answer.user != null">
+                and user_id = #{answer.user.userId}
+            </if>
+            <if test="answer.answerContent != null and answer.answerContent != ''">
+                and answer_content = #{answer.answerContent}
+            </if>
+            <if test="answer.answerLikedCount != null">
+                and answer_liked_count = #{answer.answerLikedCount}
+            </if>
+            <if test="answer.answerCreateTime != null">
+                and answer_create_time = #{answer.answerCreateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="answerId" useGeneratedKeys="true">
+        insert into confessionwall.answer(respondent_id, post_id, user_id, answer_content)
+        values (#{respondent.userId}, #{post.postId}, #{user.userId}, #{answerContent})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update" parameterType="answer">
+        update confessionwall.answer
+        <set>
+            <if test="answer.respondent != null">
+                respondent_id = #{respondent.userId},
+            </if>
+            <if test="answer.post != null">
+                post_id = #{post.postId},
+            </if>
+            <if test="answer.user != null">
+                user_id = #{user.userId},
+            </if>
+            <if test="answer.answerContent != null and answerContent != ''">
+                answer_content = #{answerContent},
+            </if>
+            <if test="answer.answerLikedCount != null">
+                answer_liked_count = #{answerLikedCount},
+            </if>
+            <if test="answer.answerCreateTime != null">
+                answer_create_time = #{answerCreateTime},
+            </if>
+        </set>
+        where answer_id = #{answerId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from confessionwall.answer where answer_id = #{answerId}
+    </delete>
+
+    <!--通过帖子id删除-->
+    <delete id="deleteByPid">
+        delete from confessionwall.answer where post_id = #{postId}
+    </delete>
+</mapper>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.eg.confessionwall.dao.TreasureDao">
+
+    <resultMap type="org.eg.confessionwall.entity.Treasure" id="TreasureMap">
+        <result property="treasureId" column="treasure_id" jdbcType="INTEGER"/>
+        <result property="treasureTime" column="treasure_time" jdbcType="TIMESTAMP"/>
+        <association property="user" select="org.eg.confessionwall.dao.UserDao.queryById" column="user_id"/>
+        <association property="post" select="org.eg.confessionwall.dao.PostDao.queryById" column="post_id"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="TreasureMap">
+        select
+          treasure_id, user_id, post_id, treasure_time
+        from confessionwall.treasure
+        where treasure_id = #{treasureId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="TreasureMap">
+        select
+          treasure_id, user_id, post_id, treasure_time
+        from confessionwall.treasure
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" parameterType="treasure" resultMap="TreasureMap">
+        select
+          treasure_id, user_id, post_id, treasure_time
+        from confessionwall.treasure
+        <where>
+            <if test="treasure.treasureId != null">
+                and treasure_id = #{treasure.treasureId}
+            </if>
+            <if test="treasure.user != null">
+                and user_id = #{treasure.user.userId}
+            </if>
+            <if test="treasure.post != null">
+                and post_id = #{treasure.post.postId}
+            </if>
+            <if test="treasure.treasureTime != null">
+                and treasure_time = #{treasure.treasureTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="treasureId" useGeneratedKeys="true">
+        insert into confessionwall.treasure(user_id, post_id)
+        values (#{user.userId}, #{post.postId})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update confessionwall.treasure
+        <set>
+            <if test="userId != null">
+                user_id = #{user.userId},
+            </if>
+            <if test="postId != null">
+                post_id = #{post.postId},
+            </if>
+            <if test="treasureTime != null">
+                treasure_time = #{treasureTime},
+            </if>
+        </set>
+        where treasure_id = #{treasureId}
+    </update>
+
+    <!--通过删除-->
+    <delete id="deleteByPidUid">
+        delete from confessionwall.treasure where post_id = #{postId} and user_id=#{userId}
+    </delete>
+
+    <!--查询用户被收藏次数-->
+    <select id="queryTreasuredNum" resultType="int">
+        select count(treasure_id)
+        from confessionwall.treasure
+        join confessionwall.post
+        on treasure.post_id=post.post_id
+        where post.user_id=#{userId}
+    </select>
+
+    <!--通过删除-->
+    <delete id="deleteByPid">
+        delete from confessionwall.treasure where post_id = #{postId}
+    </delete>
+</mapper>

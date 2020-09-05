@@ -1,0 +1,160 @@
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <title>表白墙 - 爱就大胆说出来</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" th:href="@{/res/layui/css/layui.css}">
+  <link rel="stylesheet" th:href="@{/res/css/global.css}">
+</head>
+<body>
+
+<div class="fly-header layui-bg-black" th:include="common/header.html :: head"></div>
+<br>
+
+<div class="layui-container fly-marginTop">
+  <div class="fly-panel fly-panel-user" pad20>
+    <div class="layui-tab layui-tab-brief" lay-filter="user">
+      <ul class="layui-tab-title">
+        <li><a th:href="@{/user/login}">登入</a></li>
+        <li class="layui-this">注册</li>
+      </ul>
+      <div class="layui-form layui-tab-content" id="LAY_ucm" style="padding: 20px 0;">
+        <div class="layui-tab-item layui-show">
+          <div class="layui-form layui-form-pane">
+            <form action="" method="post">
+              <div class="layui-form-item">
+                <label for="L_email" class="layui-form-label">邮箱</label>
+                <div class="layui-input-inline">
+                  <input type="text" id="L_email" name="email" required lay-verify="required|email" autocomplete="off" class="layui-input">
+                </div>
+                <div class="layui-form-mid layui-word-aux">将会成为您唯一的登入名</div>
+              </div>
+              <div class="layui-form-item">
+                <label for="L_username" class="layui-form-label">昵称</label>
+                <div class="layui-input-inline">
+                  <input type="text" id="L_username" name="username" required lay-verify="required|username" autocomplete="off" class="layui-input">
+                </div>
+              </div>
+              <div class="layui-inline">
+                <div class="layui-input-inline">
+                  <input type="radio" name="sex" value="0" checked title="男">
+                  <input type="radio" name="sex" value="1" title="女">
+                  <div class="layui-form-mid layui-word-aux">设置性别后无法更改</div>
+                </div>
+              </div>
+              <div class="layui-form-item">
+                <label for="L_pass" class="layui-form-label">密码</label>
+                <div class="layui-input-inline">
+                  <input type="password" id="L_pass" name="pass" required lay-verify="required|pass" autocomplete="off" class="layui-input">
+                </div>
+                <div class="layui-form-mid layui-word-aux">6到16个字符</div>
+              </div>
+              <div class="layui-form-item">
+                <label for="L_repass" class="layui-form-label">确认密码</label>
+                <div class="layui-input-inline">
+                  <input type="password" id="L_repass" name="repass" required lay-verify="required|pass" autocomplete="off" class="layui-input">
+                </div>
+              </div>
+<!--              <div class="layui-form-item">-->
+<!--                <label for="L_vercode" class="layui-form-label">人类验证</label>-->
+<!--                <div class="layui-input-inline">-->
+<!--                  <input type="text" id="L_vercode" name="vercode" required lay-verify="required" placeholder="请回答后面的问题" autocomplete="off" class="layui-input">-->
+<!--                </div>-->
+<!--                <div class="layui-form-mid">-->
+<!--&lt;!&ndash;                  <span style="color: #c00;">{{d.vercode}}</span>&ndash;&gt;-->
+<!--                </div>-->
+<!--              </div>-->
+              <div class="layui-form-item">
+                <button class="layui-btn" lay-filter="*" lay-submit>立即注册</button>
+              </div>
+              <div class="layui-form-mid layui-word-aux">若长时间未收到邮件，请重新注册</div>
+<!--              <div class="layui-form-item fly-form-app">-->
+<!--                <span>或者直接使用社交账号快捷注册</span>-->
+<!--                <a href="" onclick="layer.msg('正在通过QQ登入', {icon:16, shade: 0.1, time:0})" class="iconfont icon-qq" title="QQ登入"></a>-->
+<!--                <p>暂时还未接入qq登录</p>-->
+<!--              </div>-->
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="fly-footer" th:include="common/footer.html :: foot"></div>
+<script th:src="@{/res/layui/layui.js}"></script>
+<script>
+  layui.cache.page = 'jie';
+  layui.cache.user = {
+    username: '游客'
+    ,uid: -1
+    ,avatar: '../../res/images/avatar/00.jpg'
+    ,experience: 83
+    ,sex: '男'
+  };
+  layui.config({
+    version: "3.0.0"
+    ,base: '../../res/mods/'
+  }).extend({
+    fly: 'index'
+  }).use('fly');
+
+  layui.use(['jquery','form'], function(){
+    var form = layui.form;
+    var $=layui.jquery;
+
+    form.on('submit(*)', function(data){
+      $.ajax({
+        url:"/user/goReg",
+        data:JSON.stringify(data.field),
+        method:"POST",
+        contentType : "application/json;charset=UTF-8",//必须
+        dataType:"json",
+        success:function(data){
+          if (data.code == 1) {
+            layer.msg("邮箱已被注册");
+          }else if (data.code == 2) {
+            layer.msg("昵称已被注册");
+          }else if (data.code == 3) {
+            layer.msg("服务器繁忙，请稍后再试");
+          }else if (data.code == 4) {
+            layer.msg("注册成功，请尽快激活");
+              setTimeout(function () {location.href = "/";},5000);
+          }else if (data.code == 5) {
+            layer.msg("激活邮件发送失败，请重新注册");
+          }else if (data.code == 6) {
+            layer.msg("确认密码错误，请检查");
+          }
+        },
+        error:function(data){
+          layer.msg("服务器繁忙，请稍后再试");
+        }
+      });
+      return false;
+    });
+
+    form.verify({
+      username: function(value, item){
+        if(!new RegExp("^[a-zA-Z0-9_\u4e00-\u9fa5\\s·]+$").test(value)){
+          return '用户名不能有特殊字符';
+        }
+        if(/(^\_)|(\__)|(\_+$)/.test(value)){
+          return '用户名首尾不能出现下划线\'_\'';
+        }
+        if(/^\d+\d+\d$/.test(value)){
+          return '用户名不能全为数字';
+        }
+      }
+
+      ,pass: [
+        /^[\S]{6,16}$/
+        ,'密码必须6到16位，且不能出现空格'
+      ]
+    });
+  });
+</script>
+</body>
+</html>

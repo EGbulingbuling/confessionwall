@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.eg.confessionwall.dao.VisitorDao">
+
+    <resultMap type="org.eg.confessionwall.entity.Visitor" id="VisitorMap">
+        <result property="visitId" column="visit_id" jdbcType="INTEGER"/>
+        <result property="visitedTime" column="visited_time" jdbcType="TIMESTAMP"/>
+        <association property="visitor" select="org.eg.confessionwall.dao.UserDao.queryById" column="visitor_id"/>
+        <association property="visited" select="org.eg.confessionwall.dao.UserDao.queryById" column="visited_id"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="VisitorMap">
+        select
+          visit_id, visitor_id, visited_id, visited_time
+        from confessionwall.visitor
+        where visit_id = #{visitId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="VisitorMap">
+        select
+          visit_id, visitor_id, visited_id, visited_time
+        from confessionwall.visitor
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" parameterType="visitor" resultMap="VisitorMap">
+        select
+          visit_id, visitor_id, visited_id, visited_time
+        from confessionwall.visitor
+        <where>
+            <if test="visitor.visitId != null">
+                and visit_id = #{visitor.visitId}
+            </if>
+            <if test="visitor.visitor != null">
+                and visitor_id = #{visitor.visitor.userId}
+            </if>
+            <if test="visitor.visited != null">
+                and visited_id = #{visitor.visited.userId}
+            </if>
+            <if test="visitor.visitedTime != null">
+                and visited_time = #{visitedTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="visitId" useGeneratedKeys="true">
+        insert into confessionwall.visitor(visitor_id, visited_id)
+        values (#{visitor.visitor.userId}, #{visitor.visited.userId})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update confessionwall.visitor
+        <set>
+            <if test="visitorId != null">
+                visitor_id = #{visitor.userId},
+            </if>
+            <if test="visitedId != null">
+                visited_id = #{visited.userId},
+            </if>
+            <if test="visitedTime != null">
+                visited_time = #{visitedTime},
+            </if>
+        </set>
+        where visit_id = #{visitId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from confessionwall.visitor where visitor_id = #{visitorId} and visited_id = #{visitedId}
+    </delete>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryRecent" parameterType="visitor" resultMap="VisitorMap">
+        select
+        visit_id, visitor_id, visited_id, visited_time
+        from confessionwall.visitor
+        <where>
+            <if test="visitor.visitId != null">
+                and visit_id = #{visitor.visitId}
+            </if>
+            <if test="visitor.visitor != null">
+                and visitor_id = #{visitor.visitor.userId}
+            </if>
+            <if test="visitor.visited != null">
+                and visited_id = #{visitor.visited.userId}
+            </if>
+            <if test="visitor.visitedTime != null">
+                and visited_time = #{visitedTime}
+            </if>
+        </where>
+        order by visit_id desc
+        limit 0,12
+    </select>
+</mapper>

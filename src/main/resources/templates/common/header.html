@@ -1,0 +1,63 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div class="fly-header layui-bg-black" th:fragment="head">
+  <div class="layui-container">
+    <a class="fly-logo" href="/">
+      <img th:src="@{/res/images/logo.png}" alt="layui"  height="50">
+    </a>
+
+    <ul class="layui-nav fly-nav-user" th:if="${user==null}">
+
+      <!-- 未登入的状态 -->
+      <li class="layui-nav-item">
+        <a class="iconfont icon-touxiang layui-hide-xs" th:href="@{/user/login}"></a>
+      </li>
+      <li class="layui-nav-item">
+        <a th:href="@{/user/login}">登入</a>
+      </li>
+      <li class="layui-nav-item">
+        <a th:href="@{/user/reg}">注册</a>
+      </li>
+<!--      <li class="layui-nav-item layui-hide-xs">-->
+<!--        <a href="" onclick="layer.msg('正在通过QQ登入', {icon:16, shade: 0.1, time:0})" title="QQ登入" class="iconfont icon-qq"></a>-->
+<!--      </li>-->
+    </ul>
+
+    <ul class="layui-nav fly-nav-user" th:if="${user!=null}">
+      <!-- 登入后的状态 -->
+
+      <li class="layui-nav-item">
+        <a class="fly-nav-avatar" href="javascript:;">
+          <cite class="layui-hide-xs" th:text="${user.getNickname()}"></cite>
+          <i class="layui-badge fly-badge-vip" th:if="${user.getExperience() lt 600 and user.getExperience() ge 0}" th:text="Lv1"></i>
+          <i class="layui-badge fly-badge-vip" th:if="${user.getExperience() lt 2000 and user.getExperience() ge 600}" th:text="Lv2"></i>
+          <i class="layui-badge fly-badge-vip" th:if="${user.getExperience() lt 4000 and user.getExperience() ge 2000}" th:text="Lv3"></i>
+          <i class="layui-badge fly-badge-vip" th:if="${user.getExperience() lt 10000 and user.getExperience() ge 4000}" th:text="Lv4"></i>
+          <i class="layui-badge fly-badge-vip" th:if="${user.getExperience() lt 20000 and user.getExperience() ge 10000}" th:text="Lv5"></i>
+          <i class="layui-badge fly-badge-vip" th:if="${user.getExperience() ge 20000}" th:text="Lv6"></i>
+<!--          <img th:src="@{session.user.getHead()}" >-->
+          <img th:src="@{{headurl}(headurl=${user.getHead()})}" >
+          <span id="message_count_badge" class="layui-badge-dot" th:if="${messageCount gt 0}"></span>
+        </a>
+        <dl class="layui-nav-child">
+          <dd><a th:href="@{/user/set}"><i class="layui-icon">&#xe620;</i>基本设置</a></dd>
+          <dd>
+            <a th:href="@{/user/message}">
+              <i class="iconfont icon-tongzhi" style="top: 4px;"></i>我的消息
+              <span id="message_count" class="layui-badge" th:if="${messageCount gt 0 and messageCount le 99}" th:text="${messageCount}"></span>
+              <span id="message_count" class="layui-badge" th:if="${messageCount gt 99}">99+</span>
+            </a>
+          </dd>
+          <dd><a th:href="@{/user/home}"><i class="layui-icon" style="margin-left: 2px; font-size: 22px;">&#xe68e;</i>我的主页</a></dd>
+          <hr style="margin: 5px 0;">
+          <dd><a th:href="@{/user/logout}" style="text-align: center;">退出</a></dd>
+        </dl>
+      </li>
+
+    </ul>
+  </div>
+</div>
+
+</body>
+</html>
